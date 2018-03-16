@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: rick
- * Date: 15/8/17
- * Time: 下午3:35
- */
+
 
 class Singleton {
     private static $_instances = array();
