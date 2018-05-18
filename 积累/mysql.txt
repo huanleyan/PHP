@@ -1,0 +1,81 @@
+--------------1、MySQL的复制原理以及流程--------------
+(1)、复制的基本原理流程
+1-1、主：binlog线程-记录下所有改变了数据库数据的语句，放进master的binlog中
+1-2、从：io线程——在使用start slave 之后，负责从master上拉取 binlog 内容，放进 自己的relay log中；
+1-3：从：sql执行线程——执行relay log中的语句；
+(2)、MySQL复制的线程有几个及之间的关联
+MySQL 的复制是基于如下 3 个线程的交互（ 多线程复制里面应该是 4 类线程）：
+2-1. Master 上面的 binlog dump 线程，该线程负责将 master 的 binlog event 传到slave；
+2-2. Slave 上面的 IO 线程，该线程负责接收 Master 传过来的 binlog，并写入 relay log；
+2-3. Slave 上面的 SQL 线程，该线程负责读取 relay log 并执行；
+2-4. 如果是多线程复制，无论是 5.6 库级别的假多线程还是 MariaDB 或者 5.7 的真正的多线程复制， SQL 线程只做 coordinator，只负责把 relay log 中的 binlog读出来然后交给 worker 线程， woker 线程负责具体 binlog event 的执行；
+(3)、Mysql如何保证复制过程中数据一致性及减少数据同步延时
+
+
+
+
+2、MySQL中myisam与innodb的区别，至少5点
+1.InnoDB支持事物，而MyISAM不支持事物
+2.InnoDB支持行级锁，而MyISAM支持表级锁
+3.InnoDB支持MVCC, 而MyISAM不支持
+4.InnoDB支持外键，而MyISAM不支持
+5.InnoDB不支持全文索引，而MyISAM支持。
+6.InnoDB不能通过直接拷贝表文件的方法拷贝表到另外一台机器， myisam 支持
+7.InnoDB表支持多种行格式， myisam 不支持
+8.InnoDB是索引组织表， myisam 是堆表
+
+3、MySQL中varchar与char的区别以及varchar(50)中的50代表的涵义
+(1)、varchar与char的区别
+在单字节字符集下， char（ N） 在内部存储的时候总是定长， 而且没有变长字段长度列表中。 在多字节字符集下面， char(N)如果存储的字节数超过 N，那么 char（ N）将和 varchar（ N）没有区别。在多字节字符集下面，如果存
+储的字节数少于 N，那么存储 N 个字节，后面补空格，补到 N 字节长度。 都存储变长的数据和变长字段长度列表。 varchar(N)无论是什么字节字符集，都是变长的，即都存储变长数据和变长字段长度列表。
+(2)、varchar(50)中50的涵义
+最多存放50个字符，varchar(50)和(200)存储hello所占空间一样，但后者在排序时会消耗更多内存，因为order by col采用fixed_length计算col长度(memory引擎也一样)。在早期 MySQL 版本中， 50 代表字节数，现在代表字符数。
+(3)、int（20）中20的涵义
+是指显示字符的长度
+不影响内部存储，只是影响带 zerofill 定义的 int 时，前面补多少个 0，易于报表展示
+(4)、mysql为什么这么设计
+对大多数应用没有意义，只是规定一些工具用来显示字符的个数；int(1)和int(20)存储和计算均一样；
+
+
+
+
+(1)、explain出来的各种item的意义
+id : 每个被独立执行的操作的标志，表示对象被操作的顺序。一般来说， id 值大，先被执行；如果 id 值相同，则顺序从上到下。
+select_type ： 查询中每个 select 子句的类型。
+table : 名字，被操作的对象名称，通常的表名(或者别名)，但是也有其他格式。
+partitions : 匹配的分区信息。
+type : join 类型。
+possible_keys ： 列出可能会用到的索引。
+key : 实际用到的索引。
+key_len : 用到的索引键的平均长度，单位为字节。
+ref : 表示本行被操作的对象的参照对象，可能是一个常量用 const 表示，也可能是其他表的
+key 指向的对象，比如说驱动表的连接列。
+rows : 估计每次需要扫描的行数。
+filtered : rows*filtered/100 表示该步骤最后得到的行数(估计值)。
+extra : 重要的补充信息。
+
+
+15、MySQL中InnoDB引擎的行锁是通过加在什么上完成(或称实现)的？为什么是这样子的？
+
+
+答：InnoDB是基于索引来完成行锁
+例: select * from tab_with_index where id = 1 for update;
+for update 可以根据条件来完成行锁锁定,并且 id 是有索引键的列,
+如果 id 不是索引键那么InnoDB将完成表锁,,并发将无从谈起
+
+18、请简洁地描述下 MySQL 中 InnoDB 支持的四种事务隔离级别名称，以及逐级之间的区别？
+(1)、事物的4种隔离级别
+读未提交(read uncommitted)
+读已提交(read committed)
+可重复读(repeatable read)
+串行(serializable)
+(2)、不同级别的现象
+Read Uncommitted:可以读取其他 session 未提交的脏数据。
+Read Committed:允许不可重复读取，但不允许脏读取。提交后，其他会话可以看到提交的数据。
+Repeatable Read: 禁止不可重复读取和脏读取、以及幻读(innodb 独有)。
+Serializable: 事务只能一个接着一个地执行，但不能并发执行。事务隔离级别最高。
+不同的隔离级别有不同的现象，并有不同的锁定/并发机制，隔离级别越高，数据库的并发性就越差。
+
+b)、索引对数据库系统的负面影响是什么？
+负面影响：
+创建索引和维护索引需要耗费时间，这个时间随着数据量的增加而增加；索引需要占用物理空间，不光是表需要占用数据空间，每个索引也需要占用物理空间；当对表进行增、删、改、的时候索引也要动态维护，这样就降低了数据的维护速度
