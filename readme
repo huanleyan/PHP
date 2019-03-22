@@ -1,0 +1,27 @@
+设计模式分成三大类
+1，创建型模式
+	工厂方法模式（Factory method pattern)
+	抽象工厂模式（Abstract factory pattern)
+	单例模式（Singleton pattern）
+	建造者模式（Builder pattern）
+	原型模式（Prototype pattern）
+2，结构型模式
+	适配器模式（Adapter pattern）
+	桥接模式（Bridge pattern）
+	合成模式（Composite pattern）
+	装饰器模式（Decorator pattern）
+	门面模式（Facade pattern）
+	代理模式（Proxy pattern）
+	享元模式（Flyweight Pattern）
+3，行为型模式
+	策略模式（Strategy pattern）
+	模板方法模式（Template method pattern）
+	观察者模式（Observer pattern）
+	迭代器模式（Iterator pattern）
+	责任链模式（Chain of responsibility pattern）
+	命令模式（Command pattern）
+	备忘录模式（Memento pattern）
+	状态模式（State pattern）
+	访问者模式（Visitor pattern）
+	中介者模式（Mediator pattern）
+	解释器模式（Interpreter pattern）
